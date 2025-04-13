@@ -2,19 +2,48 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const { Pool } = require('pg');
+const jwt = require('jsonwebtoken');
+const helmet = require('helmet');
+const morgan = require('morgan');
+
+// Import routes
+const authRoutes = require('./routes/authRoutes');
+const voterRoutes = require('./routes/voterRoutes');
+const dashboardRoutes = require('./routes/dashboardRoutes');
+
+// Import middleware
+const errorHandler = require('./middlewares/errorHandler');
+const { authenticate } = require('./middlewares/authMiddleware');
 
 const app = express();
-app.use(cors());
-app.use(express.json());
+const PORT = process.env.PORT || 5006;
 
-// PostgreSQL Connection
+// Middleware
+app.use(helmet()); // Security headers
+app.use(cors());
+app.use(express.json({ limit: '10mb' })); // Increased limit for fingerprint data
+app.use(morgan('dev')); // Logging
+
+// Database connection
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
-  ssl: {
-    rejectUnauthorized: false,
-  },
+  ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
 });
 
+
+// Make DB pool available to the application
+app.locals.pool = pool;
+
+// Export the pool configuration so it can be imported in db.js
+
+
+// Routes
+app.use('/api/auth', authRoutes);
+app.use('/api/voters', voterRoutes);
+app.use('/api/dashboard', dashboardRoutes);
+
+
+// Keep your existing endpoints for backward compatibility
 // Fetch voter stats (Updated for PostgreSQL)
 app.get('/api/stats', async (req, res) => {
   try {
@@ -33,6 +62,7 @@ app.get('/api/stats', async (req, res) => {
   }
 });
 
+
 // Fetch a voter by ID
 app.get('/verify/:voterId', async (req, res) => {
   const { voterId } = req.params;
@@ -41,11 +71,19 @@ app.get('/verify/:voterId', async (req, res) => {
     if (result.rows.length === 0) {
       return res.status(404).json({ error: "Voter not found" });
     }
-    res.json(result.rows[0]);
+    
+    // Remove sensitive data like fingerprint before sending response
+    const { fingerprint, ...voterData } = result.rows[0];
+    res.json(voterData);
   } catch (err) {
     console.error('Database error:', err);
     res.status(500).json({ error: "Database error" });
   }
 });
 
-app.listen(5006, () => console.log("Server running on port 5006"));
+
+// Global error handler
+app.use(errorHandler);
+
+
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
