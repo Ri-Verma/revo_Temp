@@ -1,4 +1,3 @@
-// models/voterModel.js
 const db = require('../config/db');
 const { encryptFingerprint } = require('../utils/fingerprintUtils');
 

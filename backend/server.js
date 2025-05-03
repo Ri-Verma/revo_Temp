@@ -86,4 +86,4 @@ app.get('/verify/:voterId', async (req, res) => {
 app.use(errorHandler);
 
 
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+app.listen(PORT, () => console.log(`Server running on: http://localhost:${PORT}`));

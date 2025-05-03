@@ -1,4 +1,3 @@
-// controllers/voterController.js
 const voterModel = require('../models/voterModel');
 const logModel = require('../models/logModel');
 const { compareFingerprints } = require('../utils/fingerprintUtils');

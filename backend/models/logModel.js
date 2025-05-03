@@ -1,4 +1,3 @@
-// models/logModel.js
 const db = require('../config/db');
 
 class LogModel {

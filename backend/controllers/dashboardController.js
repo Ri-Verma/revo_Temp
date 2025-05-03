@@ -1,4 +1,3 @@
-// controllers/dashboardController.js
 const voterModel = require('../models/voterModel');
 const logModel = require('../models/logModel');
 

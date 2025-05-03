@@ -1,4 +1,3 @@
-// utils/fingerprintUtils.js
 const crypto = require('crypto');
 
 // Encryption key and IV should be stored securely in environment variables
